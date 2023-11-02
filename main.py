@@ -3,20 +3,31 @@ import pandas as pd
 import streamlit as st
 import cleantext
 
-
 st.header('Sentiment Analysis')
+
+# Function to get emoji based on sentiment score
+def get_sentiment_emoji(score):
+    if score >= 0.5:
+        return "😄"  # Happy emoji
+    elif score <= -0.5:
+        return "😞"  # Sad emoji
+    else:
+        return "😐"  # Neutral emoji
+
 with st.expander('Analyze Text'):
     text = st.text_input('Text here: ')
     if text:
         blob = TextBlob(text)
-        st.write('Polarity: ', round(blob.sentiment.polarity,2))
-        st.write('Subjectivity: ', round(blob.sentiment.subjectivity,2))
-
+        polarity = round(blob.sentiment.polarity, 2)
+        st.write('Polarity: ', polarity, get_sentiment_emoji(polarity))
+        subjectivity = round(blob.sentiment.subjectivity, 2)
+        st.write('Subjectivity: ', subjectivity)
 
     pre = st.text_input('Clean Text: ')
     if pre:
-        st.write(cleantext.clean(pre, clean_all= False, extra_spaces=True ,
-                                 stopwords=True ,lowercase=True ,numbers=True , punct=True))
+        cleaned_text = cleantext.clean(pre, clean_all=False, extra_spaces=True,
+                                      stopwords=True, lowercase=True, numbers=True, punct=True)
+        st.write(cleaned_text)
 
 with st.expander('Analyze CSV'):
     upl = st.file_uploader('Upload file')
@@ -25,7 +36,6 @@ with st.expander('Analyze CSV'):
         blob1 = TextBlob(x)
         return blob1.sentiment.polarity
 
-#
     def analyze(x):
         if x >= 0.5:
             return 'Positive'
@@ -34,7 +44,6 @@ with st.expander('Analyze CSV'):
         else:
             return 'Neutral'
 
-#
     if upl:
         df = pd.read_excel(upl)
         del df['Unnamed: 0']
@@ -44,7 +53,6 @@ with st.expander('Analyze CSV'):
 
         @st.cache
         def convert_df(df):
-            # IMPORTANT: Cache the conversion to prevent computation on every rerun
             return df.to_csv().encode('utf-8')
 
         csv = convert_df(df)
@@ -55,6 +63,3 @@ with st.expander('Analyze CSV'):
             file_name='sentiment.csv',
             mime='text/csv',
         )
-
-
-
